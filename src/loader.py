@@ -40,14 +40,3 @@ class Loader:
             else:
                 return ValueError("El o los archivos tienen una extensión de archivo no compatible.")
         
-                
-# Dataset lista, para pruebas nada más
-datasetList = ['data/data.csv', 'data/data.json']
-
-# test
-loader = Loader(datasetList)
-
-df = loader.load_dataframeList()
-
-for i in df:
-     print(i.head())
