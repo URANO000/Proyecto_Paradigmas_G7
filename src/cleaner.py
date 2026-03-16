@@ -1,5 +1,4 @@
 # Este módulo tiene como propósito el limpiar los datasets
-import pandas as pd
 
 class DataCleaner:
     def __init__(self, dataframeList):
