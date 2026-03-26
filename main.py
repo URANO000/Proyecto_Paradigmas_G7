@@ -1,30 +1,56 @@
-# Método main
-import pandas as pd
+import streamlit as st
 from src.loader import Loader
 from src.cleaner import DataCleaner
 from src.analyzer import DataAnalyzer
 
-# Dataset lista, para pruebas nada más
-datasetList = ['data/data.csv']
+st.title("Sistema inteligente de análisis")
 
-# Prueba de loader
-loader = Loader(datasetList)
-df = loader.load_dataframeList()
+uploaded_files = st.file_uploader("Agregar archivos", accept_multiple_files=True, type=["csv", "xlsx", "json", "parquet", "txt", "html", "feather"])
 
-# Prueba de cleaner
-cleaner = DataCleaner(df)
-clean_dfList = cleaner.clean_dataframeList()
+datasetList = []
 
-#Probar si el análisis funciona bien
-print("\n-----------Dataframes Limpios-----------")
-for df in clean_dfList:
-    print(df.to_string())
+# lista de archivos
+if uploaded_files:
 
-analyzer = DataAnalyzer(clean_dfList)
-analysis_results = analyzer.analyze_dataframeList()
+    loader = Loader(uploaded_files)
 
-print("\n-----------Resultados del Análisis-----------")
-for result in analysis_results:
-    for key, value in result.items():
-        print(f"\n  {key}:")
-        print(value)
+    try:
+        df_list = loader.load_dataframeList()
+    except Exception as e:
+        st.error(f"Error cargando archivos: {e}")
+        st.stop()
+
+    cleaner = DataCleaner(df_list)
+
+    try:
+        clean_dfList = cleaner.clean_dataframeList()
+    except Exception as e:
+        st.error(f"Error limpiando datos: {e}")
+        st.stop()
+
+    analyzer = DataAnalyzer(clean_dfList)
+
+    try:
+        results = analyzer.analyze_dataframeList()
+    except Exception as e:
+        st.error(f"Error en análisis: {e}")
+        st.stop()
+
+
+    # Mostrar resultados por archivo
+    for file, df, result in zip(uploaded_files, clean_dfList, results):
+
+        st.header(f"Archivo: {file.name}")
+
+        st.subheader("DataFrame limpio")
+        st.dataframe(df)
+
+        st.subheader("Columnas")
+        st.write("Numéricas:", result["Columnas Numericas"])
+        st.write("Categóricas:", result["Columnas Categoricas"])
+
+        st.subheader("Insights")
+        st.write(result["Insights Automaticos"])
+
+        st.subheader("Matriz de correlación")
+        st.dataframe(result["Matriz"])

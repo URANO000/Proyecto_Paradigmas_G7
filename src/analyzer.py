@@ -24,7 +24,7 @@ class DataAnalyzer:
     def detect_types(self, df):
 
         numeric_cols = df.select_dtypes(include=np.number).columns
-        categorical_cols = df.select_dtypes(include='object').columns
+        categorical_cols = df.select_dtypes(include=['object', 'string']).columns
         boolean_cols = df.select_dtypes(include='bool').columns
 
         return numeric_cols, categorical_cols, boolean_cols
@@ -323,7 +323,7 @@ class DataAnalyzer:
             "Correlaciones" : strong_relations,
             "Variable Dominante" : dominant,
             "Alta Variabilidad" : range_variable,
-            "Matriz" : corr_matrix,
+            "Matriz" : corr_matrix.to_dict(),
             "Clustering K-Means" : cluster_insights,
             "Outliers (IQR)" : outlier_details,
             "Anomalias (Isolation Forest)" : iso_details,
@@ -331,6 +331,5 @@ class DataAnalyzer:
             "Insights Automaticos" : consolidated_insights
         }
     
-
 
 

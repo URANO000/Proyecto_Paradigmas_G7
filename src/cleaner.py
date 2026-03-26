@@ -1,3 +1,4 @@
+import pandas as pd
 # Este módulo tiene como propósito el limpiar los datasets
 
 class DataCleaner:
@@ -38,9 +39,9 @@ class DataCleaner:
 
         #  Reemplazar valores nulos por 'Desconocido' si es de tipo categórico, y por la mediana si es numérico
         for column in clean_df.columns:
-            if clean_df[column].dtype == "object":
-                clean_df[column] = clean_df[column].fillna("Desconocido")
-            else:
+            if pd.api.types.is_numeric_dtype(clean_df[column]):
                 clean_df[column] = clean_df[column].fillna(clean_df[column].median())
+            else:
+                clean_df[column] = clean_df[column].fillna("Desconocido")
 
         return clean_df
