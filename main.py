@@ -1,7 +1,9 @@
 import streamlit as st
+import pandas as pd
 from src.loader import Loader
 from src.cleaner import DataCleaner
 from src.analyzer import DataAnalyzer
+from src.visualizer import DataVisualizer
 
 st.title("Sistema inteligente de análisis")
 
@@ -29,6 +31,7 @@ if uploaded_files:
         st.stop()
 
     analyzer = DataAnalyzer(clean_dfList)
+    visualizer = DataVisualizer()
 
     try:
         results = analyzer.analyze_dataframeList()
@@ -54,3 +57,38 @@ if uploaded_files:
 
         st.subheader("Matriz de correlación")
         st.dataframe(result["Matriz"])
+
+        st.subheader("Visualizaciones")
+
+        numeric_cols = list(result["Columnas Numericas"])
+        categorical_cols = list(result["Columnas Categoricas"])
+
+        if numeric_cols:
+            st.markdown("### Histogramas")
+            for fig in visualizer.plot_histograms(df, numeric_cols):
+                st.pyplot(fig)
+
+            st.markdown("### Boxplots")
+            for fig in visualizer.plot_boxplots(df, numeric_cols):
+                st.pyplot(fig)
+
+        if len(numeric_cols) >= 2:
+            st.markdown("### Diagramas de dispersión")
+            for fig in visualizer.plot_scatter(df, numeric_cols):
+                st.pyplot(fig)
+
+            st.markdown("### Heatmap de correlación")
+            corr_df = pd.DataFrame(result["Matriz"])
+            heatmap_fig = visualizer.plot_correlation_heatmap(corr_df)
+            if heatmap_fig is not None:
+                st.pyplot(heatmap_fig)
+
+            st.markdown("### Visualización de clusters")
+            cluster_fig = visualizer.plot_cluster_scatter(df, numeric_cols)
+            if cluster_fig is not None:
+                st.pyplot(cluster_fig)
+
+        if categorical_cols:
+            st.markdown("### Gráficos de barras")
+            for fig in visualizer.plot_categorical_bars(df, categorical_cols[:3]):
+                st.pyplot(fig)
