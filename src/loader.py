@@ -37,9 +37,9 @@ class Loader:
     def _read_from_path(self, path):
         if not os.path.exists(path):
             raise FileNotFoundError(f"Archivo no encontrado: {path}")
-
+        
         if path.endswith('.csv'):
-            return pd.read_csv(path)
+            return self.leer_csv_robusto(path)
 
         elif path.endswith('.xlsx'):
             return pd.read_excel(path)
@@ -71,7 +71,7 @@ class Loader:
         name = file.name.lower()
 
         if name.endswith('.csv'):
-            return pd.read_csv(file)
+            return self.leer_csv_robusto(file)
 
         elif name.endswith('.xlsx'):
             return pd.read_excel(file)
@@ -93,3 +93,24 @@ class Loader:
 
         else:
             raise ValueError(f"Extensión no compatible: {name}")
+        
+    def leer_csv_robusto(self,source):
+        # intento 1: auto-detectar
+        try:
+            return pd.read_csv(source, sep=None, engine='python', decimal=',')
+        except:
+            pass
+
+            # intento 2: forzar decimal o semicolon
+        try:
+            return pd.read_csv(source, sep=';', decimal=',')
+        except:
+            pass
+
+            # intento 3: forzar comma
+        try:
+            return pd.read_csv(source, sep=',')
+        except:
+            pass
+
+        raise ValueError("No se pudo interpretar el CSV con ningún método")

@@ -169,7 +169,7 @@ class DataAnalyzer:
             
             anomaly_insights = []
             if anomalies > 0:
-                anomaly_insights.append(f"Modelo ML (Isolation Forest) detecto {anomalies} anomalias ({anomaly_percentage:.1f}%) mediante aprendizaje no supervisado")
+                anomaly_insights.append(f"Modelo ML (Isolation Forest) detectó {anomalies} anomalías ({anomaly_percentage:.1f}%) mediante aprendizaje no supervisado")
             
             return {
                 'model': iso_forest,
@@ -200,7 +200,7 @@ class DataAnalyzer:
             ranked_features = sorted(feature_scores.items(), key=lambda x: x[1], reverse=True)
             
             importance_insights = []
-            importance_insights.append("\n=== IMPORTANCIA DE CARACTERISTICAS (IA/ML) ===")
+            importance_insights.append("\n------ IMPORTANCIA DE CARACTERÍSTICAS (IA/ML) ------")
             
             for idx, (feature, score) in enumerate(ranked_features, 1):
                 percentage_importance = (score / max(feature_scores.values())) * 100
@@ -217,7 +217,7 @@ class DataAnalyzer:
         
         try:
             predictions_insights = []
-            predictions_insights.append("\n=== ANALISIS PREDICTIVO (REGRESION LINEAL-ML) ===")
+            predictions_insights.append("\n------ ANÁLISIS PREDICTIVO (REGRESIÓN LINEAL-ML) ------")
             
             strong_correlations = []
             for i in range(len(corr_matrix.columns)):
@@ -238,8 +238,8 @@ class DataAnalyzer:
                     model.fit(X, y)
                     
                     r2_score = model.score(X, y)
-                    direction = "aumentara" if model.coef_[0][0] > 0 else "disminuira"
-                    predictions_insights.append(f"  - Si '{col1}' varia, '{col2}' {direction} (precision: {r2_score:.2%})")
+                    direction = "aumentará" if model.coef_[0][0] > 0 else "disminuirá"
+                    predictions_insights.append(f"  - Si '{col1}' varía, '{col2}' {direction} (precisión: {r2_score:.2%})")
                 except:
                     pass
             
@@ -253,27 +253,27 @@ class DataAnalyzer:
         consolidated_insights = []
         
         if strong_relations:
-            consolidated_insights.append("\n=== CORRELACIONES SIGNIFICATIVAS ===")
+            consolidated_insights.append("\n------ CORRELACIONES SIGNIFICATIVAS ------")
             for relation in strong_relations:
                 consolidated_insights.append(f"  • {relation}")
         
         if outlier_insights:
-            consolidated_insights.append("\n=== VALORES ATIPICOS DETECTADOS ===")
+            consolidated_insights.append("\n------ VALORES ATÍPICOS DETECTADOS ------")
             for insight in outlier_insights:
                 consolidated_insights.append(f"  • {insight}")
         
         if iso_insights:
-            consolidated_insights.append("\n=== DETECCION DE ANOMALIAS (ISOLATION FOREST-ML) ===")
+            consolidated_insights.append("\n------ DETECCIÓN DE ANOMALÍAS (ISOLATION FOREST-ML) ------")
             for insight in iso_insights:
                 consolidated_insights.append(f"  • {insight}")
         
         if dominant_cat:
-            consolidated_insights.append("\n=== VARIABLES CATEGORICAS DOMINANTES ===")
+            consolidated_insights.append("\n------ VARIABLES CATEGÓRICAS DOMINANTES ------")
             for insight in dominant_cat:
                 consolidated_insights.append(f"  • {insight}")
         
         if range_var:
-            consolidated_insights.append("\n=== VARIABLES CON ALTA VARIABILIDAD ===")
+            consolidated_insights.append("\n------ VARIABLES CON ALTA VARIABILIDAD ------")
             for insight in range_var:
                 consolidated_insights.append(f"  • {insight}")
         
@@ -286,7 +286,7 @@ class DataAnalyzer:
                 consolidated_insights.append(insight)
         
         if cluster_insights:
-            consolidated_insights.append("\n=== ANALISIS DE AGRUPACIONES (K-MEANS-ML) ===")
+            consolidated_insights.append("\n------ ANÁLISIS DE AGRUPACIONES (K-MEANS-ML) ------")
             for insight in cluster_insights:
                 consolidated_insights.append(f"  • {insight}")
         
@@ -317,18 +317,18 @@ class DataAnalyzer:
         )
 
         return {
-            "Columnas Numericas" : numeric_cols,
-            "Columnas Categoricas" : categorical_cols,
-            "Estadisticas" : stats,
+            "Columnas Numéricas" : numeric_cols,
+            "Columnas Categóricas" : categorical_cols,
+            "Estadísticas" : stats,
             "Correlaciones" : strong_relations,
             "Variable Dominante" : dominant,
             "Alta Variabilidad" : range_variable,
             "Matriz" : corr_matrix.to_dict(),
             "Clustering K-Means" : cluster_insights,
             "Outliers (IQR)" : outlier_details,
-            "Anomalias (Isolation Forest)" : iso_details,
+            "Anomalías (Isolation Forest)" : iso_details,
             "Feature Importance" : feature_scores,
-            "Insights Automaticos" : consolidated_insights
+            "Insights Automáticos" : consolidated_insights
         }
     
 

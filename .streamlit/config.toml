@@ -1,0 +1,11 @@
+[theme]
+primaryColor="#B8860B"
+backgroundColor="#0E1117"
+secondaryBackgroundColor="#262730"
+
+textColor="#FAFAFA"
+linkColor="darkOrchid"
+
+font='"Space Grotesk":https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&display=swap'
+headingFont='"Space Grotesk":https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&display=swap'
+codeFont='monospace'

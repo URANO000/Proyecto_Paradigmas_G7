@@ -28,7 +28,7 @@ class DataCleaner:
         )
 
         # Eliminar filas duplicadas
-        clean_df = df.drop_duplicates()
+        clean_df = df.drop_duplicates().copy()
 
         # ELiminar valores nulos (exclusivamente)
         clean_df.dropna(axis='columns', how='all', inplace=True)
