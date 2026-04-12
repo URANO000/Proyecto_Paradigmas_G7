@@ -4,7 +4,7 @@ from src.loader import Loader
 from src.cleaner import DataCleaner
 from src.analyzer import DataAnalyzer
 from src.visualizer import DataVisualizer
-
+import io
 
 
 # PAGE CONFIG
@@ -30,6 +30,30 @@ with st.sidebar:
         type=["csv", "xlsx", "json", "parquet", "txt", "html", "feather"]
     )
 
+
+def generate_excel_report(df, result):
+    output = io.BytesIO()
+
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+
+        # 📊 Datos
+        df.to_excel(writer, index=False, sheet_name='Datos')
+
+        # 📉 Estadísticas
+        stats_df = df.describe().T
+        stats_df.to_excel(writer, sheet_name='Estadisticas')
+
+        # 📈 Correlación
+        corr_df = pd.DataFrame(result["Matriz"])
+        corr_df.to_excel(writer, sheet_name='Correlacion')
+
+        # 🤖 Insights
+        insights = result["Insights Automáticos"]
+        insights_df = pd.DataFrame({"Insights": insights})
+        insights_df.to_excel(writer, sheet_name='Insights', index=False)
+
+    output.seek(0)
+    return output
 
 
 # CACHED DATA PROCESSING
@@ -79,11 +103,12 @@ if uploaded_files:
     # -------------------------
     # TABS
     # -------------------------
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5= st.tabs([
         "Resumen",
         "Datos",
         "Análisis",
-        "Visualizaciones"
+        "Visualizaciones",
+        "Reporte"
     ])
 
     # TAB 1: RESUMEN
@@ -180,18 +205,62 @@ if uploaded_files:
                 if heatmap_fig:
                     st.pyplot(heatmap_fig)
 
-        # -------- CATEGORICAL --------
-        if categorical_cols:
-            st.markdown("### Variables categóricas")
+          # -------- CATEGORICAL --------
+    if categorical_cols:
+        st.markdown("### Variables categóricas")
 
-            selected_cat_col = st.selectbox(
-                "Seleccionar categoría",
-                categorical_cols[:5],
-                key="cat_col"
-            )
+        selected_cat_col = st.selectbox(
+            "Seleccionar categoría",
+            categorical_cols[:5],
+            key="cat_col"
+        )
 
-            fig = visualizer.plot_categorical_bars(df, [selected_cat_col])[0]
-            st.pyplot(fig)
+        fig = visualizer.plot_categorical_bars(df, [selected_cat_col])[0]
+        st.pyplot(fig)
+
+
+   
+    # TAB 5: REPORTE
+   
+
+    with tab5:
+        st.subheader("Reporte inteligente")
+
+        st.success("Reporte generado automáticamente listo para descarga")
+
+        st.markdown("### Vista previa del reporte")
+
+        # INFO
+        st.markdown("#### Información general")
+        st.write(f"Filas: {df.shape[0]}")
+        st.write(f"Columnas: {df.shape[1]}")
+
+        # STATS
+        st.markdown("#### Estadísticas descriptivas")
+        stats_df = df.describe().T
+        st.dataframe(stats_df, use_container_width=True)
+
+        # CORRELACIÓN
+        st.markdown("#### Matriz de correlación")
+        corr_df = pd.DataFrame(result["Matriz"])
+        st.dataframe(corr_df, use_container_width=True)
+
+        # INSIGHTS
+        st.markdown("#### Insights automáticos")
+        st.write(result["Insights Automáticos"])
+
+        # DESCARGA
+        st.markdown("### Descargar reporte completo")
+
+        excel_file = generate_excel_report(df, result)
+
+        st.download_button(
+            label="Descargar Excel completo",
+            data=excel_file,
+            file_name=f"reporte_inteligente_{selected_file}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
 
 else:
     st.info("Sube uno o más archivos para comenzar")
