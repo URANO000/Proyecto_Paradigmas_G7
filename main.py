@@ -265,6 +265,14 @@ if uploaded_files:
         st.subheader("Reporte inteligente")
 
         st.success("Reporte generado automáticamente listo para descarga")
+        
+        excel_file = generate_excel_report(df, result)
+        st.download_button(
+            label="Descargar Excel completo",
+            data=excel_file,
+            file_name=f"reporte_inteligente_{selected_file}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
         st.markdown("### Vista previa del reporte")
 
@@ -285,19 +293,11 @@ if uploaded_files:
 
         # INSIGHTS
         st.markdown("#### Insights automáticos")
-        st.write(result["Insights Automáticos"])
+        display_insights(result["Insights Automáticos"])
 
         # DESCARGA
         st.markdown("### Descargar reporte completo")
 
-        excel_file = generate_excel_report(df, result)
-
-        st.download_button(
-            label="Descargar Excel completo",
-            data=excel_file,
-            file_name=f"reporte_inteligente_{selected_file}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
 
 
 else:
