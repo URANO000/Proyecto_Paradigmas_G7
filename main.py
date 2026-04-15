@@ -7,6 +7,43 @@ from src.visualizer import DataVisualizer
 import io
 
 
+def display_insights(insights_list):
+   
+    if not insights_list:
+        st.info("No hay insights disponibles para este dataset.")
+        return
+    
+    # Agrupar insights por categoría
+    categories = {}
+    current_category = None
+    
+    for insight in insights_list:
+        if insight.startswith("\n") and insight.isupper() or insight.startswith("\n"):
+            current_category = insight.strip("\n").strip()
+        else:
+            if current_category and insight.strip():
+                if current_category not in categories:
+                    categories[current_category] = []
+                categories[current_category].append(insight.strip())
+    
+    # Mostrar cada categoría en un contenedor con bordes
+    for category, insights in categories.items():
+        if not category or not insights:
+            continue
+            
+        with st.container(border=True):
+            st.markdown(f"**{category}**")
+            
+            for insight in insights:
+                if insight and not insight.startswith("---"):
+                    # Limpiar y presentar el insight
+                    cleaned_insight = insight.strip("• ").strip()
+                    if cleaned_insight and not cleaned_insight.upper() == cleaned_insight:
+                        st.markdown(f"• {cleaned_insight}")
+                    elif cleaned_insight:
+                        st.text(cleaned_insight)
+
+
 # PAGE CONFIG
 
 st.set_page_config(
@@ -131,8 +168,9 @@ if uploaded_files:
             st.write("Categóricas")
             st.write(categorical_cols)
 
-        st.markdown("### Insights automáticos")
-        st.write(result["Insights Automáticos"])
+        st.divider()
+        st.markdown("### Insights Automáticos")
+        display_insights(result["Insights Automáticos"])
 
 
     # TAB 2: DATOS

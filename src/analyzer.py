@@ -61,7 +61,8 @@ class DataAnalyzer:
                 corr_value = corr_matrix.loc[col1, col2]
                 
                 if abs(corr_value) > 0.75:
-                    strong_relations.append(f"Hay una fuerte correlación entre {col1} y {col2}: {corr_value:.2f}")
+                    relation_type = "positiva" if corr_value > 0 else "negativa"
+                    strong_relations.append(f"Existe una fuerte correlación {relation_type} entre '{col1}' y '{col2}' ({corr_value:.2f})")
 
         return corr_matrix, strong_relations
     
@@ -78,7 +79,7 @@ class DataAnalyzer:
                 percentage = distribution.iloc[0] * 100
 
                 if percentage > 40:
-                    insights.append(f"En la variable '{col}', la categoría '{top_category}' domina con {percentage:.2f}% de los registros")
+                    insights.append(f"En '{col}': la categoría '{top_category}' concentra {percentage:.1f}% de los registros, indicando una distribución desbalanceada")
 
         return insights
     
@@ -92,7 +93,8 @@ class DataAnalyzer:
             value_range = df[col].max() - df[col].min()
 
             if value_range > df[col].mean():
-                insights.append(f"La variable '{col}' tiene alta variedad en sus valores")
+                variance_pct = (value_range / df[col].mean()) * 100 if df[col].mean() != 0 else 0
+                insights.append(f"'{col}' muestra variabilidad significativa con un rango de {value_range:.2f} ({variance_pct:.0f}% respecto a la media)")
         
         return insights
     
@@ -111,13 +113,13 @@ class DataAnalyzer:
             
             df['cluster'] = clusters
             
-            cluster_insights = [f"Se detectaron {k} agrupaciones principales en los datos."]
+            cluster_insights = [f"Se identificaron {k} grupos principales mediante clustering K-Means"]
             
             # Información sobre tamaño de clusters
             cluster_sizes = pd.Series(clusters).value_counts().sort_index()
             for cluster_id, size in cluster_sizes.items():
                 percentage = (size / len(df)) * 100
-                cluster_insights.append(f"  - Cluster {cluster_id}: {size} registros ({percentage:.1f}%)")
+                cluster_insights.append(f"Grupo {cluster_id}: {size} registros ({percentage:.1f}% del total)")
             
             return df, model, cluster_insights
         except Exception as e:
@@ -148,7 +150,7 @@ class DataAnalyzer:
                     'upper_bound': upper_bound
                 }
                 
-                outlier_insights.append(f"La variable '{col}' contiene {len(outliers)} valores atípicos ({outlier_percentage:.1f}% de los registros)")
+                outlier_insights.append(f"'{col}' contiene {len(outliers)} valores atípicos ({outlier_percentage:.1f}%) fuera de rangos esperados")
         
         return outlier_details, outlier_insights
     
@@ -169,7 +171,7 @@ class DataAnalyzer:
             
             anomaly_insights = []
             if anomalies > 0:
-                anomaly_insights.append(f"Modelo ML (Isolation Forest) detectó {anomalies} anomalías ({anomaly_percentage:.1f}%) mediante aprendizaje no supervisado")
+                anomaly_insights.append(f"Se detectaron {anomalies} anomalías ({anomaly_percentage:.1f}%) mediante análisis de comportamiento atípico")
             
             return {
                 'model': iso_forest,
@@ -178,7 +180,7 @@ class DataAnalyzer:
                 'labels': anomaly_labels
             }, anomaly_insights
         except Exception as e:
-            return {}, [f"Error en Isolation Forest: {str(e)}"]
+            return {}, [f"Error en análisis de anomalías: {str(e)}"]
     
     def feature_importance_analysis(self, df, numeric_cols, corr_matrix):
         
@@ -200,15 +202,15 @@ class DataAnalyzer:
             ranked_features = sorted(feature_scores.items(), key=lambda x: x[1], reverse=True)
             
             importance_insights = []
-            importance_insights.append("\n------ IMPORTANCIA DE CARACTERÍSTICAS (IA/ML) ------")
+            importance_insights.append("Ranking de importancia predictiva de características:")
             
             for idx, (feature, score) in enumerate(ranked_features, 1):
                 percentage_importance = (score / max(feature_scores.values())) * 100
-                importance_insights.append(f"  {idx}. '{feature}': {percentage_importance:.1f}% importancia predictiva")
+                importance_insights.append(f"{idx}. '{feature}': {percentage_importance:.0f}% de influencia en el modelo")
             
             return feature_scores, importance_insights
         except Exception as e:
-            return {}, [f"Error en Feature Importance: {str(e)}"]
+            return {}, [f"Error en análisis de características: {str(e)}"]
     
     def predictive_analysis(self, df, numeric_cols, corr_matrix):
         
@@ -217,7 +219,6 @@ class DataAnalyzer:
         
         try:
             predictions_insights = []
-            predictions_insights.append("\n------ ANÁLISIS PREDICTIVO (REGRESIÓN LINEAL-ML) ------")
             
             strong_correlations = []
             for i in range(len(corr_matrix.columns)):
@@ -229,23 +230,29 @@ class DataAnalyzer:
                     if abs(corr_value) > 0.7:
                         strong_correlations.append((col1, col2, corr_value))
             
-            for col1, col2, corr_value in strong_correlations[:3]:
-                try:
-                    X = df[[col1]].values
-                    y = df[[col2]].values
-                    
-                    model = LinearRegression()
-                    model.fit(X, y)
-                    
-                    r2_score = model.score(X, y)
-                    direction = "aumentará" if model.coef_[0][0] > 0 else "disminuirá"
-                    predictions_insights.append(f"  - Si '{col1}' varía, '{col2}' {direction} (precisión: {r2_score:.2%})")
-                except:
-                    pass
+            if strong_correlations:
+                predictions_insights.append("Análisis predictivo basado en relaciones lineales:")
+                
+                for col1, col2, corr_value in strong_correlations[:3]:
+                    try:
+                        X = df[[col1]].values
+                        y = df[[col2]].values
+                        
+                        model = LinearRegression()
+                        model.fit(X, y)
+                        
+                        r2_score = model.score(X, y)
+                        direction = "aumentará" if model.coef_[0][0] > 0 else "disminuirá"
+                        precision = f"{r2_score:.0%}"
+                        predictions_insights.append(f"Si '{col1}' varía, '{col2}' {direction} (precisión predictiva: {precision})")
+                    except:
+                        pass
+            else:
+                predictions_insights.append("No se encontraron relaciones lineales fuertes (> 0.7) entre las variables numéricas para análisis predictivo")
             
             return predictions_insights
         except Exception as e:
-            return [f"Error en Predictive Analysis: {str(e)}"]
+            return [f"Error en predicción: {str(e)}"]
     
     #Este método genera insights automáticos consolidados a partir de todos los análisis
     def generate_auto_insights(self, stats, strong_relations, outlier_insights, cluster_insights, dominant_cat, range_var, iso_insights, feature_insights, prediction_insights):
@@ -253,42 +260,50 @@ class DataAnalyzer:
         consolidated_insights = []
         
         if strong_relations:
-            consolidated_insights.append("\n------ CORRELACIONES SIGNIFICATIVAS ------")
+            consolidated_insights.append("\nCORRELACIONES SIGNIFICATIVAS")
             for relation in strong_relations:
-                consolidated_insights.append(f"  • {relation}")
+                consolidated_insights.append(f"{relation}")
         
         if outlier_insights:
-            consolidated_insights.append("\n------ VALORES ATÍPICOS DETECTADOS ------")
+            consolidated_insights.append("\nVALORES ATÍPICOS DETECTADOS")
             for insight in outlier_insights:
-                consolidated_insights.append(f"  • {insight}")
+                consolidated_insights.append(f"{insight}")
         
         if iso_insights:
-            consolidated_insights.append("\n------ DETECCIÓN DE ANOMALÍAS (ISOLATION FOREST-ML) ------")
+            consolidated_insights.append("\nDETECCIÓN DE ANOMALÍAS")
             for insight in iso_insights:
-                consolidated_insights.append(f"  • {insight}")
+                consolidated_insights.append(f"{insight}")
         
         if dominant_cat:
-            consolidated_insights.append("\n------ VARIABLES CATEGÓRICAS DOMINANTES ------")
+            consolidated_insights.append("\nDISTRIBUCIÓN DE VARIABLES CATEGÓRICAS")
             for insight in dominant_cat:
-                consolidated_insights.append(f"  • {insight}")
+                consolidated_insights.append(f"{insight}")
         
         if range_var:
-            consolidated_insights.append("\n------ VARIABLES CON ALTA VARIABILIDAD ------")
+            consolidated_insights.append("\nVARIABLES CON ALTA VARIABILIDAD")
             for insight in range_var:
-                consolidated_insights.append(f"  • {insight}")
+                consolidated_insights.append(f"{insight}")
         
         if feature_insights:
+            consolidated_insights.append("\nIMPORTANCIA DE CARACTERÍSTICAS")
             for insight in feature_insights:
                 consolidated_insights.append(insight)
         
         if prediction_insights:
-            for insight in prediction_insights:
-                consolidated_insights.append(insight)
+            # Solo agregar si tiene más de un elemento o si el elemento es informativo
+            if len(prediction_insights) > 1 or (len(prediction_insights) == 1 and not prediction_insights[0].startswith("No se encontraron")):
+                consolidated_insights.append("\nANÁLISIS PREDICTIVO")
+                for insight in prediction_insights:
+                    consolidated_insights.append(insight)
+            elif len(prediction_insights) == 1 and prediction_insights[0].startswith("No se encontraron"):
+                # Mostrar el mensaje informativo en la sección predictiva
+                consolidated_insights.append("\nANÁLISIS PREDICTIVO")
+                consolidated_insights.append(prediction_insights[0])
         
         if cluster_insights:
-            consolidated_insights.append("\n------ ANÁLISIS DE AGRUPACIONES (K-MEANS-ML) ------")
+            consolidated_insights.append("\nANÁLISIS DE AGRUPACIONES")
             for insight in cluster_insights:
-                consolidated_insights.append(f"  • {insight}")
+                consolidated_insights.append(f"{insight}")
         
         return consolidated_insights
 

@@ -34,8 +34,8 @@ class DataCleaner:
         clean_df.dropna(axis='columns', how='all', inplace=True)
         clean_df.dropna(axis='index', how='all', inplace=True)
 
-        # Conversión de datos a tipo inferido (por ejemplo, si los datos numéricos están guardados como str)
-        clean_df = clean_df.convert_dtypes()
+  
+        clean_df = clean_df.infer_objects()
 
         #  Reemplazar valores nulos por 'Desconocido' si es de tipo categórico, y por la mediana si es numérico
         for column in clean_df.columns:
